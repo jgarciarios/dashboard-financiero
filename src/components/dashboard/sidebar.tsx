@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
+import { createClient } from "@/utils/supabase/client"
 import {
     LayoutDashboard,
     ArrowRightLeft,
@@ -11,35 +13,62 @@ import {
     HelpCircle,
     LogOut,
     TrendingUp,
+    Shield,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Logo } from "@/components/ui/logo"
+import { logout } from "@/app/login/actions"
 
-const mainNav = [
-    { label: "Dashboard", href: "/", icon: LayoutDashboard },
-    { label: "Transacciones", href: "/transacciones", icon: ArrowRightLeft },
-    { label: "Presupuestos", href: "/presupuestos", icon: PieChart },
-    { label: "Inversiones", href: "/inversiones", icon: TrendingUp },
-    { label: "Billetera", href: "/billetera", icon: Wallet },
+export const mainNav = [
+    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Transacciones", href: "/dashboard/transacciones", icon: ArrowRightLeft },
+    { label: "Presupuestos", href: "/dashboard/presupuestos", icon: PieChart },
+    { label: "Inversiones", href: "/dashboard/inversiones", icon: TrendingUp },
+    { label: "Billetera", href: "/dashboard/billetera", icon: Wallet },
 ]
 
-const bottomNav = [
-    { label: "Configuración", href: "/configuracion", icon: Settings },
-    { label: "Ayuda", href: "/ayuda", icon: HelpCircle },
+export const bottomNav = [
+    { label: "Configuración", href: "/dashboard/configuracion", icon: Settings },
+    { label: "Ayuda", href: "/dashboard/ayuda", icon: HelpCircle },
 ]
 
 export function DashboardSidebar() {
     const pathname = usePathname()
+    const [role, setRole] = useState<string | null>(null)
+    const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const supabase = createClient()
+
+    useEffect(() => {
+        async function fetchRole() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("role")
+                    .eq("id", user.id)
+                    .single()
+
+                if (profile) {
+                    setRole(profile.role)
+                }
+            }
+        }
+        fetchRole()
+    }, [supabase])
+
+    async function handleLogout() {
+        setIsLoggingOut(true)
+        await logout()
+    }
 
     return (
-        <aside className="hidden w-64 flex-col border-r bg-card lg:flex">
+        <aside className="hidden w-64 flex-col border-r bg-card md:flex print:hidden">
             {/* Logo */}
             <div className="flex h-16 items-center gap-2 px-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                    <TrendingUp className="h-4 w-4 text-primary-foreground" />
-                </div>
+                <Logo className="h-8 w-8 drop-shadow-sm" />
                 <span className="text-lg font-bold tracking-tight">FinanzApp</span>
             </div>
 
@@ -65,6 +94,24 @@ export function DashboardSidebar() {
                             </Link>
                         )
                     })}
+
+                    {role === "admin" && (
+                        <>
+                            <Separator className="my-2" />
+                            <Link href="/dashboard/admin">
+                                <Button
+                                    variant={pathname === "/dashboard/admin" ? "secondary" : "ghost"}
+                                    className={cn(
+                                        "w-full justify-start gap-3",
+                                        pathname === "/dashboard/admin" && "font-semibold"
+                                    )}
+                                >
+                                    <Shield className="h-4 w-4" />
+                                    Panel Admin
+                                </Button>
+                            </Link>
+                        </>
+                    )}
                 </nav>
             </ScrollArea>
 
@@ -83,9 +130,11 @@ export function DashboardSidebar() {
                     <Button
                         variant="ghost"
                         className="w-full justify-start gap-3 text-destructive hover:text-destructive"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
                     >
                         <LogOut className="h-4 w-4" />
-                        Cerrar sesión
+                        {isLoggingOut ? "Cerrando..." : "Cerrar sesión"}
                     </Button>
                 </nav>
             </div>

@@ -47,9 +47,18 @@ export const useTransactionStore = create<TransactionsState>((set) => ({
     },
 
     addTransaction: async (tx) => {
+        // Validate logged-in user to append the user_id for RLS policies
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            console.error("Error inserting transaction: No authenticated user found.")
+            return false
+        }
+
         const { error } = await supabase
             .from("transactions")
             .insert({
+                user_id: user.id, // Mandatory column
                 id: tx.id,
                 fecha: tx.fecha,
                 concepto: tx.concepto,

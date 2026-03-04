@@ -6,56 +6,46 @@ import {
     TrendingUp,
     TrendingDown,
     Wallet,
+    Briefcase,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useTransactionStore } from "@/store/transactions-store"
+import { CurrencyDisplay } from "./currency-display"
 
-function formatCurrency(value: number) {
-    return `$${Math.abs(value).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`
+interface SummaryCardsProps {
+    ingresos: number
+    gastos: number
+    flujoNeto: number
+    patrimonioNeto?: number
 }
 
-export function SummaryCards() {
-    const transactions = useTransactionStore((s) => s.transactions)
-
-    const { ingresos, gastos, flujoNeto } = useMemo(() => {
-        let inc = 0
-        let exp = 0
-        for (const tx of transactions) {
-            if (tx.tipo === "ingreso") inc += tx.monto
-            else exp += tx.monto
-        }
-        return { ingresos: inc, gastos: exp, flujoNeto: inc - exp }
-    }, [transactions])
+export function SummaryCards({ ingresos, gastos, flujoNeto, patrimonioNeto = 0 }: SummaryCardsProps) {
 
     const cards = [
         {
-            title: "Balance Total",
-            value: formatCurrency(flujoNeto),
-            icon: Wallet,
+            title: "Patrimonio Neto",
+            value: patrimonioNeto,
+            icon: Briefcase,
             color: "text-emerald-500",
             bgColor: "bg-emerald-500/10",
         },
         {
             title: "Ingresos del Mes",
-            value: formatCurrency(ingresos),
+            value: ingresos,
             icon: TrendingUp,
             color: "text-blue-500",
             bgColor: "bg-blue-500/10",
         },
         {
             title: "Gastos del Mes",
-            value: formatCurrency(gastos),
+            value: gastos,
             icon: TrendingDown,
             color: "text-orange-500",
             bgColor: "bg-orange-500/10",
         },
         {
             title: "Flujo de Caja Neto",
-            value: flujoNeto >= 0 ? `+${formatCurrency(flujoNeto)}` : `-${formatCurrency(flujoNeto)}`,
-            icon: DollarSign,
+            value: flujoNeto,
+            icon: Wallet,
             color: flujoNeto >= 0 ? "text-emerald-500" : "text-red-500",
             bgColor: flujoNeto >= 0 ? "bg-emerald-500/10" : "bg-red-500/10",
         },
@@ -74,7 +64,13 @@ export function SummaryCards() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{card.value}</div>
+                        <div className="text-2xl font-bold">
+                            {card.title === "Flujo de Caja Neto" ? (
+                                <CurrencyDisplay amount={card.value} showSign />
+                            ) : (
+                                <CurrencyDisplay amount={card.value} />
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             ))}

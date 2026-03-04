@@ -12,15 +12,28 @@ import {
     CartesianGrid,
     Tooltip,
 } from "recharts"
-import { useTransactionStore } from "@/store/transactions-store"
+import { useCurrencyStore } from "@/store/currency-store"
 
-export function FinancialChart() {
-    const { transactions } = useTransactionStore()
+interface Transaction {
+    id: string
+    description: string
+    category: string
+    date: string
+    type: string
+    amount: number
+}
+
+interface FinancialChartProps {
+    transactions: Transaction[]
+}
+
+export function FinancialChart({ transactions }: FinancialChartProps) {
+    const { currency, mepRate } = useCurrencyStore()
 
     const chartData = useMemo(() => {
         // Agrupar transacciones por Mes y Año
         const grouped = transactions.reduce((acc, tx) => {
-            const date = new Date(tx.fecha)
+            const date = new Date(tx.date)
             if (isNaN(date.getTime())) return acc
 
             const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
@@ -38,18 +51,37 @@ export function FinancialChart() {
                 }
             }
 
-            if (tx.tipo === "ingreso") {
-                acc[key].ingresos += tx.monto
+            if (tx.type === "Ingreso" || tx.type === "ingreso") {
+                acc[key].ingresos += tx.amount
             } else {
-                acc[key].gastos += tx.monto
+                acc[key].gastos += tx.amount
             }
 
             return acc
         }, {} as Record<string, { mes: string, ingresos: number, gastos: number, sortKey: number }>)
 
         // Convertir a array y ordenar cronológicamente
-        return Object.values(grouped).sort((a, b) => a.sortKey - b.sortKey).map(({ mes, ingresos, gastos }) => ({ mes, ingresos, gastos }))
-    }, [transactions])
+        let processedData = Object.values(grouped).sort((a, b) => a.sortKey - b.sortKey).map(({ mes, ingresos, gastos }) => ({ mes, ingresos, gastos }))
+
+        // Aplicar divisas
+        if (currency === 'USD' && mepRate) {
+            processedData = processedData.map(item => ({
+                mes: item.mes,
+                ingresos: item.ingresos / mepRate,
+                gastos: item.gastos / mepRate
+            }))
+        }
+
+        return processedData
+    }, [transactions, currency, mepRate])
+
+    if (transactions.length === 0) {
+        return (
+            <Card className="flex flex-col items-center justify-center p-6 h-full min-h-[400px]">
+                <div className="text-muted-foreground">No hay datos suficientes para graficar</div>
+            </Card>
+        )
+    }
 
     return (
         <Card>
@@ -83,29 +115,38 @@ export function FinancialChart() {
                                     <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <CartesianGrid stroke="hsl(var(--muted-foreground) / 0.2)" strokeDasharray="3 3" vertical={false} />
                             <XAxis
                                 dataKey="mes"
-                                className="text-xs"
-                                tick={{ fill: "hsl(var(--muted-foreground))" }}
+                                className="text-xs font-medium"
+                                tick={{ fill: "#888888" }}
                                 axisLine={false}
                                 tickLine={false}
+                                tickMargin={10}
                             />
                             <YAxis
-                                className="text-xs"
-                                tick={{ fill: "hsl(var(--muted-foreground))" }}
+                                className="text-xs font-medium"
+                                tick={{ fill: "#888888" }}
                                 axisLine={false}
                                 tickLine={false}
-                                tickFormatter={(value) => `$${(value / 1000).toFixed(1)}k`}
+                                tickFormatter={(value) => currency === 'USD' ? `US$${value.toFixed(0)}` : `$${(value / 1000).toFixed(0)}k`}
+                                tickMargin={10}
                             />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: "hsl(var(--card))",
+                                    backgroundColor: "hsl(var(--background))",
                                     border: "1px solid hsl(var(--border))",
                                     borderRadius: "8px",
                                     fontSize: "12px",
+                                    color: "hsl(var(--foreground))",
+                                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)"
                                 }}
-                                formatter={(value: any) => [`$${Number(value).toLocaleString()}`, ""]}
+                                itemStyle={{ color: "hsl(var(--foreground))", fontWeight: "500" }}
+                                labelStyle={{ color: "hsl(var(--muted-foreground))", marginBottom: "4px" }}
+                                formatter={(value: any) => [
+                                    `${currency === 'USD' ? 'USD ' : '$'}${Number(value).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                                    ""
+                                ]}
                             />
                             <Area
                                 type="monotone"

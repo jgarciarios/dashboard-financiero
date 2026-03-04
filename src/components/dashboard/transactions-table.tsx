@@ -1,16 +1,29 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import {
     ArrowDownLeft,
     ArrowUpRight,
-    MoreHorizontal,
     Loader2,
     Trash2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { deleteTransaction } from "@/app/dashboard/transacciones/actions"
+import { EditTransactionModal } from "@/components/dashboard/edit-transaction-modal"
+import { CurrencyDisplay } from "./currency-display"
 import {
     Table,
     TableBody,
@@ -19,36 +32,22 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { useTransactionStore } from "@/store/transactions-store"
+interface Transaction {
+    id: string
+    description: string
+    category: string
+    date: string
+    type: string
+    amount: number
+    status?: string
+}
 
-export function TransactionsTable() {
-    const transactions = useTransactionStore((s) => s.transactions)
-    const loading = useTransactionStore((s) => s.loading)
-    const error = useTransactionStore((s) => s.error)
-    const fetchTransactions = useTransactionStore((s) => s.fetchTransactions)
-    const deleteTransaction = useTransactionStore((s) => s.deleteTransaction)
+interface TransactionsTableProps {
+    transactions: Transaction[]
+}
 
+export function TransactionsTable({ transactions }: TransactionsTableProps) {
     const [deletingId, setDeletingId] = useState<string | null>(null)
-
-    useEffect(() => {
-        fetchTransactions()
-    }, [fetchTransactions])
-
-    const sorted = useMemo(
-        () =>
-            [...transactions].sort(
-                (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-            ),
-        [transactions]
-    )
-
-    function formatAmount(tx: (typeof sorted)[number]) {
-        const sign = tx.tipo === "ingreso" ? "+" : "-"
-        return `${sign}$${tx.monto.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        })}`
-    }
 
     function formatDate(iso: string) {
         const d = new Date(iso + "T12:00:00") // avoid timezone shift
@@ -61,8 +60,13 @@ export function TransactionsTable() {
 
     async function handleDelete(id: string) {
         setDeletingId(id)
-        await deleteTransaction(id)
-        setDeletingId(null)
+        try {
+            await deleteTransaction(id)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setDeletingId(null)
+        }
     }
 
     return (
@@ -76,15 +80,9 @@ export function TransactionsTable() {
                 </Button>
             </CardHeader>
             <CardContent>
-                {loading && (
+                {transactions.length === 0 && (
                     <div className="flex items-center justify-center py-8 text-muted-foreground">
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Cargando transacciones…
-                    </div>
-                )}
-                {error && (
-                    <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
-                        Error al cargar transacciones: {error}
+                        No hay transacciones todavía. Crea una para comenzar.
                     </div>
                 )}
                 <Table>
@@ -99,64 +97,88 @@ export function TransactionsTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sorted.map((tx) => (
+                        {transactions.map((tx) => (
                             <TableRow key={tx.id}>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         <div
-                                            className={`flex h-8 w-8 items-center justify-center rounded-full ${tx.tipo === "ingreso"
+                                            className={`flex h-8 w-8 items-center justify-center rounded-full ${tx.type === "Ingreso" || tx.type === "ingreso"
                                                 ? "bg-emerald-500/10 text-emerald-500"
                                                 : "bg-red-500/10 text-red-500"
                                                 }`}
                                         >
-                                            {tx.tipo === "ingreso" ? (
+                                            {tx.type === "Ingreso" || tx.type === "ingreso" ? (
                                                 <ArrowDownLeft className="h-4 w-4" />
                                             ) : (
                                                 <ArrowUpRight className="h-4 w-4" />
                                             )}
                                         </div>
-                                        <span className="font-medium">{tx.concepto}</span>
+                                        <span className="font-medium">{tx.description}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell className="hidden sm:table-cell">
                                     <Badge variant="secondary" className="font-normal">
-                                        {tx.categoria}
+                                        {tx.category}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="hidden text-muted-foreground md:table-cell">
-                                    {formatDate(tx.fecha)}
+                                    {formatDate(tx.date)}
                                 </TableCell>
                                 <TableCell className="hidden sm:table-cell">
                                     <Badge
-                                        variant={tx.estado === "completada" ? "default" : "outline"}
+                                        variant={tx.status === "completada" ? "default" : "outline"}
                                         className="font-normal"
                                     >
-                                        {tx.estado === "completada" ? "Completada" : "Pendiente"}
+                                        Completada
                                     </Badge>
                                 </TableCell>
                                 <TableCell
-                                    className={`text-right font-semibold ${tx.tipo === "ingreso"
+                                    className={`text-right font-semibold ${tx.type === "Ingreso" || tx.type === "ingreso"
                                         ? "text-emerald-500"
                                         : "text-red-500"
                                         }`}
                                 >
-                                    {formatAmount(tx)}
+                                    <CurrencyDisplay amount={tx.type === "Ingreso" || tx.type === "ingreso" ? tx.amount : -tx.amount} showSign />
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                        onClick={() => handleDelete(tx.id)}
-                                        disabled={deletingId === tx.id}
-                                    >
-                                        {deletingId === tx.id ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="h-4 w-4" />
-                                        )}
-                                        <span className="sr-only">Eliminar</span>
-                                    </Button>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <EditTransactionModal transaction={tx} />
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                                    disabled={deletingId === tx.id}
+                                                >
+                                                    {deletingId === tx.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="h-4 w-4" />
+                                                    )}
+                                                    <span className="sr-only">Eliminar</span>
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Esta acción no se puede deshacer. Esto borrará permanentemente la transacción
+                                                        "{tx.description}" por <CurrencyDisplay amount={tx.amount} />.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() => handleDelete(tx.id)}
+                                                        className="bg-red-600 hover:bg-red-700 text-white"
+                                                    >
+                                                        Eliminar
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
