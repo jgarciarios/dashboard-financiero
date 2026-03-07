@@ -29,21 +29,21 @@ export function SummaryCards({ ingresos, gastos, flujoNeto, patrimonioNeto = 0 }
             bgColor: "bg-emerald-500/10",
         },
         {
-            title: "Ingresos del Mes",
+            title: "MRR (Ingreso Recurrente)",
             value: ingresos,
             icon: TrendingUp,
             color: "text-blue-500",
             bgColor: "bg-blue-500/10",
         },
         {
-            title: "Gastos del Mes",
+            title: "Costos Operativos (Servidores/Pauta)",
             value: gastos,
             icon: TrendingDown,
             color: "text-orange-500",
             bgColor: "bg-orange-500/10",
         },
         {
-            title: "Flujo de Caja Neto",
+            title: "Rentabilidad Neta",
             value: flujoNeto,
             icon: Wallet,
             color: flujoNeto >= 0 ? "text-emerald-500" : "text-red-500",
@@ -65,7 +65,7 @@ export function SummaryCards({ ingresos, gastos, flujoNeto, patrimonioNeto = 0 }
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {card.title === "Flujo de Caja Neto" ? (
+                            {card.title === "Rentabilidad Neta" ? (
                                 <CurrencyDisplay amount={card.value} showSign />
                             ) : (
                                 <CurrencyDisplay amount={card.value} />

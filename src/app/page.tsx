@@ -44,24 +44,24 @@ export default async function LandingPage() {
                         <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
                             <Badge variant="outline" className="mb-6 py-1.5 px-4 text-sm rounded-full bg-muted/50 border-cyan-500/30 text-cyan-700 dark:text-cyan-400 font-medium">
                                 <span className="flex h-2 w-2 rounded-full bg-cyan-500 mr-2 animate-pulse"></span>
-                                El futuro de las finanzas está acá
+                                El futuro de tu Agencia Digital está acá
                             </Badge>
 
                             <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl md:text-8xl text-balance mb-6">
-                                El control total de tus finanzas, <br className="hidden md:block" />
+                                Control total para tu <br className="hidden md:block" />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 pb-2">
-                                    simplificado.
+                                    Agencia Digital.
                                 </span>
                             </h1>
 
                             <p className="mt-4 text-xl md:text-2xl text-muted-foreground max-w-3xl text-balance font-medium leading-relaxed">
-                                Toma decisiones inteligentes basadas en datos. Monitorea liquidez, presupuestos e inversiones en tiempo real, todo desde un único y poderoso panel de control.
+                                Toma decisiones inteligentes basadas en datos. Monitorea tu MRR, rentabilidad por cliente, control de horas y costos de servidores y pauta en tiempo real.
                             </p>
 
                             <div className="mt-12 flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-center justify-center">
                                 <Link href={user ? "/dashboard" : "/login"} className="w-full sm:w-auto hover:scale-105 transition-transform">
                                     <Button size="lg" className="w-full bg-foreground text-background hover:bg-foreground/90 h-14 px-8 text-lg font-bold rounded-full shadow-xl shadow-foreground/10">
-                                        {user ? "Ir a mi Panel" : "Empezar Gratis"} <ArrowRight className="ml-2 h-5 w-5" />
+                                        {user ? "Ver Panel de Rentabilidad" : "Gestionar mi Agencia"} <ArrowRight className="ml-2 h-5 w-5" />
                                     </Button>
                                 </Link>
                                 {!user && (
@@ -78,9 +78,9 @@ export default async function LandingPage() {
                 <section className="w-full py-24 border-t bg-muted/10 relative">
                     <div className="container mx-auto px-4 md:px-6">
                         <div className="text-center mb-16 max-w-3xl mx-auto">
-                            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl text-balance mb-4">Herramientas diseñadas para escalar</h2>
+                            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl text-balance mb-4">Herramientas diseñadas para agencias</h2>
                             <p className="text-lg text-muted-foreground text-balance">
-                                Construimos todo lo que necesitas para llevar la gestión de tu empresa o patrimonio personal al siguiente nivel, sin fricción.
+                                Construimos todo lo que necesitas para gestionar clientes, retainers y proyectos de manera rentable y sin fricción.
                             </p>
                         </div>
 
@@ -92,9 +92,9 @@ export default async function LandingPage() {
                                     <div className="h-14 w-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center mb-4">
                                         <PieChart className="h-7 w-7 text-cyan-600 dark:text-cyan-400" />
                                     </div>
-                                    <CardTitle className="text-3xl font-bold">Analítica en Tiempo Real</CardTitle>
+                                    <CardTitle className="text-3xl font-bold">Métricas de Agencia</CardTitle>
                                     <CardDescription className="text-lg mt-2 font-medium">
-                                        Tus métricas clave, gráficos de rendimiento y cash flow actualizados al instante, para que nunca te pierdas una oportunidad.
+                                        Tus métricas clave, MRR, rentabilidad por proyecto y cash flow actualizados al instante, para que tomes el control.
                                     </CardDescription>
                                 </CardHeader>
                             </Card>
@@ -120,9 +120,9 @@ export default async function LandingPage() {
                                         <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4">
                                             <Laptop className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
                                         </div>
-                                        <CardTitle className="text-3xl font-bold">Multi-dispositivo Nativo</CardTitle>
+                                        <CardTitle className="text-3xl font-bold">Control Multi-dispositivo</CardTitle>
                                         <CardDescription className="text-lg mt-2 font-medium">
-                                            Una experiencia impecable en web, tablet o smartphone. Tus finanzas siempre al alcance de tu mano, estés donde estés.
+                                            Una experiencia impecable en web, tablet o smartphone. La rentabilidad de tu agencia siempre al alcance de tu mano, estés donde estés.
                                         </CardDescription>
                                     </div>
                                     {/* Abstract UI representation */}
@@ -169,11 +169,11 @@ export default async function LandingPage() {
                                     <ul className="space-y-4">
                                         <li className="flex gap-3 items-center">
                                             <CheckCircle2 className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                                            <span className="font-medium">2 Cuentas Bancarias/Billeteras</span>
+                                            <span className="font-medium">2 Clientes Activos</span>
                                         </li>
                                         <li className="flex gap-3 items-center">
                                             <CheckCircle2 className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                                            <span className="font-medium">50 Transacciones mensuales</span>
+                                            <span className="font-medium">Gestión de 5 Proyectos</span>
                                         </li>
                                         <li className="flex gap-3 items-center">
                                             <CheckCircle2 className="h-5 w-5 text-muted-foreground flex-shrink-0" />
@@ -210,11 +210,11 @@ export default async function LandingPage() {
                                     <ul className="space-y-4">
                                         <li className="flex gap-3 items-center">
                                             <CheckCircle2 className="h-5 w-5 text-cyan-600 flex-shrink-0" />
-                                            <span className="font-medium">Cuentas ilimitadas</span>
+                                            <span className="font-medium">Clientes ilimitados</span>
                                         </li>
                                         <li className="flex gap-3 items-center">
                                             <CheckCircle2 className="h-5 w-5 text-cyan-600 flex-shrink-0" />
-                                            <span className="font-medium">Transacciones ilimitadas</span>
+                                            <span className="font-medium">Retainers y proyectos ilimitados</span>
                                         </li>
                                         <li className="flex gap-3 items-center">
                                             <CheckCircle2 className="h-5 w-5 text-cyan-600 flex-shrink-0" />

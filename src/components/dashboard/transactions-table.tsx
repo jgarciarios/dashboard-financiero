@@ -88,8 +88,8 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Descripción</TableHead>
-                            <TableHead className="hidden sm:table-cell">Categoría</TableHead>
+                            <TableHead>Cliente/Proyecto</TableHead>
+                            <TableHead className="hidden sm:table-cell">Tipo (Retainer/One-off)</TableHead>
                             <TableHead className="hidden md:table-cell">Fecha</TableHead>
                             <TableHead className="hidden sm:table-cell">Estado</TableHead>
                             <TableHead className="text-right">Monto</TableHead>
