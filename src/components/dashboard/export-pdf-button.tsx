@@ -1,112 +1,78 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Download, Lock } from "lucide-react"
-import { toast } from "sonner"
+import { Download } from "lucide-react"
 import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { toPng } from "html-to-image"
 
-interface Transaction {
-    id: string
-    description: string
-    category: string
-    date: string
-    type: string
-    amount: number
-}
+export function ExportPDFButton() {
+    const [isLoading, setIsLoading] = useState(false)
 
-interface ExportPDFButtonProps {
-    transactions: Transaction[]
-    role: string
-}
-
-export function ExportPDFButton({ transactions, role }: ExportPDFButtonProps) {
-    const isPremium = role === 'pro' || role === 'admin'
-
-    const handleExport = () => {
-        if (!isPremium) {
-            toast.info('Mejorá a Premium para descargar reportes PDF', {
-                description: 'Accedé a herramientas avanzadas para tu negocio.'
-            })
-            return
-        }
-
-        if (transactions.length === 0) {
-            toast.error('No hay transacciones para exportar')
-            return
-        }
+    const handleExport = async () => {
+        setIsLoading(true)
 
         try {
-            const doc = new jsPDF()
+            // Buscamos el reporte o el main entero si no lo encuentra
+            const element = document.getElementById("dashboard-report") || document.querySelector("main")
 
-            // Elegante Título
-            doc.setFontSize(20)
-            doc.setTextColor(15, 23, 42) // Slate 900
-            doc.text("FinanzApp - Reporte de Transacciones", 14, 22)
+            if (!element) {
+                console.error("No se encontró el contenedor del dashboard")
+                return
+            }
 
-            // Subtítulo / Fecha
-            doc.setFontSize(11)
-            doc.setTextColor(100, 116, 139) // Slate 500
-            const dateStr = new Date().toLocaleDateString('es-AR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            })
-            doc.text(`Generado el: ${dateStr}`, 14, 30)
-
-            // Tabla
-            const tableColumn = ["Fecha", "Descripción", "Categoría", "Monto", "Tipo"]
-            const tableRows = transactions.map(tx => [
-                new Date(tx.date + "T12:00:00").toLocaleDateString('es-AR'),
-                tx.description,
-                tx.category,
-                `$${tx.amount.toFixed(2)}`,
-                tx.type
-            ])
-
-            autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                startY: 40,
-                styles: { fontSize: 9, cellPadding: 4 },
-                headStyles: { fillColor: [14, 165, 233], textColor: 255 }, // Cyan 500
-                alternateRowStyles: { fillColor: [248, 250, 252] }, // Slate 50
-                margin: { top: 40 }
+            // Sacamos la foto con la nueva cámara
+            const imgData = await toPng(element as HTMLElement, {
+                backgroundColor: "#09090b", // Fondo oscuro corporativo
+                pixelRatio: 2, // Alta calidad
+                filter: (node) => {
+                    // Verificamos si es un elemento HTML (nodeType === 1)
+                    if (node.nodeType === 1) {
+                        const htmlNode = node as HTMLElement
+                        // Retornamos false si tiene la clase o el atributo para ignorarlos
+                        if (
+                            htmlNode.classList?.contains("print:hidden") ||
+                            htmlNode.hasAttribute("data-html2canvas-ignore")
+                        ) {
+                            return false
+                        }
+                    }
+                    // En caso contrario, lo incluimos
+                    return true
+                }
             })
 
-            doc.save("finanzapp-reporte.pdf")
-            toast.success("PDF generado exitosamente")
+            // Armamos el PDF A4
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            })
+
+            const pdfWidth = pdf.internal.pageSize.getWidth()
+            const htmlElement = element as HTMLElement
+            // Calculamos la proporción perfecta para que no se estire
+            const pdfHeight = (htmlElement.offsetHeight * pdfWidth) / htmlElement.offsetWidth
+
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight)
+            pdf.save("Balance-Rentabilidad-Agencia.pdf")
+
         } catch (error) {
-            console.error("Error generating PDF", error)
-            toast.error("Ocurrió un error al generar el PDF")
+            console.error("Error al exportar el PDF:", error)
+        } finally {
+            setIsLoading(false)
         }
-    }
-
-    if (!isPremium) {
-        return (
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="outline" onClick={handleExport} className="gap-2 border-dashed border-cyan-500/50 text-cyan-700 hover:text-cyan-800 hover:bg-cyan-50 dark:text-cyan-400 dark:hover:text-cyan-300 dark:hover:bg-cyan-950/30">
-                            <Lock className="h-4 w-4" />
-                            <span className="hidden sm:inline">Exportar a PDF</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Solo disponible en Plan Premium</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        )
     }
 
     return (
-        <Button onClick={handleExport} className="gap-2 bg-cyan-600 hover:bg-cyan-700 text-white shadow-sm">
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Exportar a PDF</span>
+        <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={isLoading}
+            className="border-cyan-500/30 hover:bg-cyan-500/10"
+        >
+            <Download className="mr-2 h-4 w-4" />
+            {isLoading ? "Generando..." : "Descargar Balance (PDF)"}
         </Button>
     )
 }

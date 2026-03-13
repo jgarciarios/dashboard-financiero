@@ -10,6 +10,7 @@ import { ExportReportButton } from "@/components/dashboard/export-report-button"
 import { PrintHeader } from "@/components/dashboard/print-header"
 import { MonthYearFilter } from "@/components/dashboard/month-year-filter"
 import { TrendingUp } from "lucide-react"
+import { ExportPDFButton } from "@/components/dashboard/export-pdf-button"
 
 interface SearchParams {
   mes?: string
@@ -28,7 +29,6 @@ export default async function DashboardPage(props: { searchParams: Promise<Searc
   const mes = searchParams.mes || currentMonth
   const anio = searchParams.anio || currentYear
 
-  // Construct start/end dates for the selected month to filter transactions
   const startDate = `${anio}-${mes}-01T00:00:00.000Z`
   const lastDay = new Date(Number(anio), Number(mes), 0).getDate()
   const endDate = `${anio}-${mes}-${lastDay}T23:59:59.999Z`
@@ -54,12 +54,11 @@ export default async function DashboardPage(props: { searchParams: Promise<Searc
     investments = invResponse.data || []
   }
 
-  // Calculation for Net Worth
   let liquidez = 0
   accounts.forEach((acc) => {
     const balance = Number(acc.balance) || 0
     if (acc.type === "Tarjeta de Crédito" && balance > 0) {
-      liquidez -= balance // Debt
+      liquidez -= balance
     } else {
       liquidez += balance
     }
@@ -86,6 +85,7 @@ export default async function DashboardPage(props: { searchParams: Promise<Searc
 
   const flujoNeto = ingresos - gastos
   const latestTransactions = transactions.slice(0, 5)
+
   return (
     <div className="flex h-screen overflow-hidden bg-background print:h-auto print:bg-white print:text-black">
       <DashboardSidebar />
@@ -97,56 +97,61 @@ export default async function DashboardPage(props: { searchParams: Promise<Searc
           <div className="mx-auto flex max-w-7xl flex-col gap-6">
             <PrintHeader />
 
+            {/* Cabecera y Botones (Quedan afuera del PDF) */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
               <h2 className="text-3xl font-bold tracking-tight">Dashboard General</h2>
               <div className="flex items-center gap-2">
                 <MonthYearFilter />
                 <ExportReportButton />
+                <ExportPDFButton />
               </div>
             </div>
 
-            <SummaryCards
-              ingresos={ingresos}
-              gastos={gastos}
-              flujoNeto={flujoNeto}
-              patrimonioNeto={patrimonioNeto}
-            />
+            {/* ESTA ES LA CAJA EXACTA A LA QUE SE LE SACA LA FOTO */}
+            <div id="dashboard-report" className="flex flex-col gap-6 bg-background">
+              <SummaryCards
+                ingresos={ingresos}
+                gastos={gastos}
+                flujoNeto={flujoNeto}
+                patrimonioNeto={patrimonioNeto}
+              />
 
-            {transactions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-12 mt-6 border border-dashed rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-center">
-                <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
-                  <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Sin movimientos</h3>
-                <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto mb-6">
-                  No hay registros en {mes}/{anio}. Cargá tu primera transacción para comenzar a medir tu rendimiento en este periodo.
-                </p>
-                <div className="print:hidden">
-                  <TransactionForm />
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-6 lg:grid-cols-3">
-                  <div className="lg:col-span-2">
-                    <FinancialChart transactions={transactions} />
+              {transactions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-12 mt-6 border border-dashed rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-center" data-html2canvas-ignore="true">
+                  <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="lg:col-span-1">
-                    <AssetAllocationChart accounts={accounts} investments={investments} />
-                  </div>
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-3 print:hidden mt-6">
-                  <div className="lg:col-span-3">
+                  <h3 className="text-xl font-bold mb-2">Sin movimientos</h3>
+                  <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto mb-6">
+                    No hay registros en {mes}/{anio}. Cargá tu primera transacción para comenzar a medir tu rendimiento en este periodo.
+                  </p>
+                  <div className="print:hidden">
                     <TransactionForm />
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div className="grid gap-6 lg:grid-cols-3">
+                    <div className="lg:col-span-2">
+                      <FinancialChart transactions={transactions} />
+                    </div>
+                    <div className="lg:col-span-1">
+                      <AssetAllocationChart accounts={accounts} investments={investments} />
+                    </div>
+                  </div>
 
-                <div className="print:hidden">
-                  <TransactionsTable transactions={latestTransactions} />
-                </div>
-              </>
-            )}
+                  <div className="grid gap-6 lg:grid-cols-3 print:hidden mt-6" data-html2canvas-ignore="true">
+                    <div className="lg:col-span-3">
+                      <TransactionForm />
+                    </div>
+                  </div>
+
+                  <div className="print:hidden">
+                    <TransactionsTable transactions={latestTransactions} />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </main>
       </div>
