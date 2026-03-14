@@ -50,7 +50,7 @@ export default async function TransaccionesPage() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
                             <h1 className="text-3xl font-bold tracking-tight">Historial de Transacciones</h1>
                             <div className="flex items-center space-x-2 w-full sm:w-auto">
-                                <ExportPDFButton transactions={displayTransactions} role={role} />
+                                <ExportPDFButton />
                                 <ExportCSVButton transactions={displayTransactions} />
                                 <NewTransactionModal />
                             </div>
