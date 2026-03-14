@@ -128,12 +128,34 @@ export function DashboardHeader() {
             {/* Right: ThemeToggle + Notifications + Profile */}
             <div className="flex items-center gap-3">
                 <ThemeToggle />
-                <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5" />
-                    <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]">
-                        3
-                    </Badge>
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="relative">
+                            <Bell className="h-5 w-5" />
+                            <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]">
+                                3
+                            </Badge>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                        <DropdownMenuLabel className="font-normal flex items-center justify-between">
+                            <span className="font-semibold px-1">Notificaciones</span>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                            <p className="text-sm font-medium leading-none">Nuevo pago de cliente ingresado</p>
+                            <p className="text-xs text-muted-foreground mt-1">Hace 10 minutos</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                            <p className="text-sm font-medium leading-none text-amber-600 dark:text-amber-500">Alerta: Vencimiento de servidor</p>
+                            <p className="text-xs text-muted-foreground mt-1">Hace 2 horas</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+                            <p className="text-sm font-medium leading-none text-green-600 dark:text-green-500">Suscripción de Leads Smart renovada</p>
+                            <p className="text-xs text-muted-foreground mt-1">Hace 1 día</p>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
                 <Separator orientation="vertical" className="h-8" />
 

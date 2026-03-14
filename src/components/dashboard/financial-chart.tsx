@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -89,17 +89,6 @@ export function FinancialChart({ transactions }: FinancialChartProps) {
                 <CardTitle className="text-base font-semibold">
                     Ingresos vs Gastos
                 </CardTitle>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="text-xs">
-                        6M
-                    </Button>
-                    <Button variant="secondary" size="sm" className="text-xs">
-                        1A
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-xs">
-                        Todo
-                    </Button>
-                </div>
             </CardHeader>
             <CardContent>
                 <div className="h-[300px] w-full">
@@ -155,6 +144,9 @@ export function FinancialChart({ transactions }: FinancialChartProps) {
                                 strokeWidth={2}
                                 fill="url(#ingresos)"
                                 name="Ingresos"
+                                isAnimationActive={true}
+                                animationDuration={2000}
+                                animationEasing="ease-out"
                             />
                             <Area
                                 type="monotone"
@@ -163,6 +155,9 @@ export function FinancialChart({ transactions }: FinancialChartProps) {
                                 strokeWidth={2}
                                 fill="url(#gastos)"
                                 name="Gastos"
+                                isAnimationActive={true}
+                                animationDuration={2000}
+                                animationEasing="ease-out"
                             />
                         </AreaChart>
                     </ResponsiveContainer>
